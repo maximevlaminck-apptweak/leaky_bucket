@@ -34,6 +34,20 @@ class LeakyBucketTest < Minitest::Test
 
   end
 
+  def test_throttle_does_not_crash_when_threshold_exceeds_interval
+    LeakyBucket::Throttler.throttle(1, threshold: 120, interval: 60, burst: 20)
+  end
+
+  def test_burst_is_respected_when_threshold_exceeds_interval
+    21.times do
+      LeakyBucket::Throttler.throttle(1, threshold: 120, interval: 60, burst: 20)
+    end
+
+    assert_raises(LeakyBucket::TooManyRequests) do
+      LeakyBucket::Throttler.throttle(1, threshold: 120, interval: 60, burst: 20)
+    end
+  end
+
   def test_that_it_has_a_version_number
     refute_nil ::LeakyBucket::VERSION
   end
